@@ -22,7 +22,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 animate-pulse"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Garment Sizer Pro</span>
           </div>
-          <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700">v2.1</span>
+          <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700">v2.3</span>
         </div>
         
         <!-- Setup Grid -->
@@ -36,12 +36,23 @@
           <!-- Configuration Controls -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Print Area Setup</label>
-              <select id="area-config" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Front Print Area</label>
+              <select id="front-area-config" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
                 <option value="single">Single Area (Appends 5 N/A)</option>
                 <option value="double" selected>Double Area (Recording Active)</option>
               </select>
             </div>
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Back Print Area</label>
+              <select id="back-area-config" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                <option value="single">Single Area (Appends 5 N/A)</option>
+                <option value="double" selected>Double Area (Recording Active)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Compatibility and Alignment Settings -->
+          <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-[10px] font-bold text-purple-400 uppercase tracking-wider">Back Compatibility</label>
               <select id="back-status" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
@@ -49,6 +60,10 @@
                 <option value="incompatible">Incompatible Print Area</option>
                 <option value="compatible" selected>Compatible / Active</option>
               </select>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Garment Total H (in)</label>
+              <input type="text" id="garment-height" value="28" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-3 font-bold focus:border-blue-500 outline-none" />
             </div>
           </div>
 
@@ -72,19 +87,16 @@
             </div>
           </div>
 
-          <!-- Total Garment Height and Utilities -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <label class="text-[10px] font-bold text-slate-400 uppercase">Garment Total H (in)</label>
-              <input type="text" id="garment-height" value="28" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-3 font-bold focus:border-blue-500 outline-none" />
-            </div>
-            <div class="flex items-end gap-2">
+          <!-- Utility Options -->
+          <div class="grid grid-cols-1 gap-4">
+            <div class="flex gap-2">
               <button id="btn-center" class="flex-1 h-10 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 3 6 6-6 6-6-6 6-6Z"/><path d="M9 21 3 15l6-6 6 6-6 6Z"/></svg>
-                Center
+                Center Active Frame
               </button>
-              <button id="btn-screenshot" disabled class="h-10 px-3 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow">
+              <button id="btn-screenshot" disabled class="h-10 px-4 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow" title="Capture Screenshot">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                <span>Screenshot</span>
               </button>
             </div>
           </div>
@@ -273,7 +285,11 @@
     let images = { front: null, back: null };
     let activeTab = 'front';
     let history = [];
-    let areaConfig = 'double';
+    
+    // Split into individual configs
+    let frontAreaConfig = 'double';
+    let backAreaConfig = 'double';
+
     let backStatus = 'compatible';
     let placementNote = 'Match to mockup';
 
@@ -296,7 +312,8 @@
 
     const errorBox = document.getElementById('error-box');
     const errorMessage = document.getElementById('error-message');
-    const selectAreaConfig = document.getElementById('area-config');
+    const selectFrontAreaConfig = document.getElementById('front-area-config');
+    const selectBackAreaConfig = document.getElementById('back-area-config');
     const selectBackStatus = document.getElementById('back-status');
     const uploadFront = document.getElementById('upload-front');
     const uploadBack = document.getElementById('upload-back');
@@ -399,7 +416,7 @@
 
       // 2. FRONT AREA 2
       let frontArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
-      if (images.front && areaConfig === 'double') {
+      if (images.front && frontAreaConfig === 'double') {
         frontArea2 = formatBoxCoordinates(recorded.front.area2 || boxes.front);
       }
 
@@ -413,7 +430,7 @@
 
       // 4. BACK AREA 2
       let backArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
-      if (backStatus === 'compatible' && images.back && areaConfig === 'double') {
+      if (backStatus === 'compatible' && images.back && backAreaConfig === 'double') {
         backArea2 = formatBoxCoordinates(recorded.back.area2 || boxes.back);
       }
 
@@ -450,7 +467,7 @@
       if (!images.front) {
         f2Badge.textContent = "No Front Image";
         f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400";
-      } else if (areaConfig === 'single') {
+      } else if (frontAreaConfig === 'single') {
         f2Badge.textContent = "Locked N/A 🔒";
         f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
       } else if (recorded.front.area2) {
@@ -483,7 +500,7 @@
       if (backStatus === 'none' || backStatus === 'incompatible') {
         b2Badge.textContent = "Locked N/A 🔒";
         b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
-      } else if (areaConfig === 'single') {
+      } else if (backAreaConfig === 'single') {
         b2Badge.textContent = "Locked N/A 🔒";
         b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
       } else if (!images.back) {
@@ -498,8 +515,9 @@
       }
     }
 
+    // Always keep inputs up to date during interactions
     function syncInputs() {
-      if (ppi > 0 && !dragState) {
+      if (ppi > 0) {
         inputBoxHeight.value = (boxes[activeTab].height / ppi).toFixed(2);
         inputBoxOffset.value = ((boxes[activeTab].y - guides.collar) / ppi).toFixed(2);
       }
@@ -557,7 +575,9 @@
         // Ghost Area 2
         const g2 = document.getElementById(`ghost-${side}-2`);
         const r2 = recorded[side].area2;
-        if (r2 && isCurrentSide && areaConfig === 'double') {
+        const currentSideConfig = (side === 'front') ? frontAreaConfig : backAreaConfig;
+
+        if (r2 && isCurrentSide && currentSideConfig === 'double') {
           g2.style.left = `${r2.x}px`;
           g2.style.top = `${r2.y}px`;
           g2.style.width = `${r2.width}px`;
@@ -569,7 +589,22 @@
       });
     }
 
+    // Helper to dynamic lock states on slot captures
+    function updateArea2ButtonState() {
+      const currentConfig = (activeTab === 'front') ? frontAreaConfig : backAreaConfig;
+      if (currentConfig === 'single') {
+        btnRecordArea2.disabled = true;
+        area2SubLabel.textContent = "Locked (Single Area)";
+      } else {
+        btnRecordArea2.disabled = false;
+        area2SubLabel.textContent = "Save Active Frame";
+      }
+    }
+
     function renderCanvas() {
+      // Dynamic button availability state mapping
+      updateArea2ButtonState();
+
       if (!images[activeTab]) {
         canvasPlaceholder.classList.remove('hidden');
         canvasActive.classList.add('hidden');
@@ -690,7 +725,11 @@
       };
 
       const handleEnd = () => {
-        dragState = null;
+        if (dragState) {
+          dragState = null;
+          syncInputs();
+          renderCanvas();
+        }
       };
 
       window.addEventListener('mousemove', handleMove);
@@ -714,7 +753,8 @@
         showError(`Please upload the ${activeTab.toUpperCase()} image first.`);
         return;
       }
-      if (areaConfig !== 'double') return;
+      const currentConfig = (activeTab === 'front') ? frontAreaConfig : backAreaConfig;
+      if (currentConfig !== 'double') return;
       recorded[activeTab].area2 = { ...boxes[activeTab] };
       showNotification(`Saved Active Box as ${activeTab.toUpperCase()} Area 2`);
       renderCanvas();
@@ -729,15 +769,13 @@
       renderCanvas();
     });
 
-    selectAreaConfig.addEventListener('change', e => {
-      areaConfig = e.target.value;
-      if (areaConfig === 'single') {
-        btnRecordArea2.disabled = true;
-        area2SubLabel.textContent = "Locked (Single Area)";
-      } else {
-        btnRecordArea2.disabled = false;
-        area2SubLabel.textContent = "Save Active Frame";
-      }
+    selectFrontAreaConfig.addEventListener('change', e => {
+      frontAreaConfig = e.target.value;
+      renderCanvas();
+    });
+
+    selectBackAreaConfig.addEventListener('change', e => {
+      backAreaConfig = e.target.value;
       renderCanvas();
     });
 
