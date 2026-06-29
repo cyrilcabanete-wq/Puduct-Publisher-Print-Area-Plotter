@@ -22,7 +22,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 animate-pulse"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Garment Sizer Pro</span>
           </div>
-          <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700">v2.3</span>
+          <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700">v2.4</span>
         </div>
         
         <!-- Setup Grid -->
@@ -33,7 +33,6 @@
             <span id="error-message"></span>
           </div>
 
-          <!-- Configuration Controls -->
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Front Print Area</label>
@@ -63,7 +62,7 @@
             </div>
             <div class="space-y-2">
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Garment Total H (in)</label>
-              <input type="text" id="garment-height" value="28" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-3 font-bold focus:border-blue-500 outline-none" />
+              <input type="text" id="garment-height" value="28" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-3 font-bold focus:border-blue-500 outline-none transition-all" />
             </div>
           </div>
 
@@ -87,7 +86,6 @@
             </div>
           </div>
 
-          <!-- Utility Options -->
           <div class="grid grid-cols-1 gap-4">
             <div class="flex gap-2">
               <button id="btn-center" class="flex-1 h-10 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow">
@@ -109,21 +107,40 @@
 
           <!-- Printable Area Specs -->
           <div class="space-y-4 pt-2">
+            <!-- Warning/Lock Banner -->
+            <div id="lock-banner" class="hidden p-2 bg-amber-950/50 border border-amber-500/50 text-amber-300 text-[10px] font-bold rounded flex items-center justify-between gap-1 animate-pulse">
+              <span class="flex items-center gap-1.5">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span class="lock-text">LAYOUT LOCKED (Captures Active).</span>
+              </span>
+              <span class="text-[8px] bg-amber-900/50 px-1.5 py-0.5 rounded border border-amber-800">Clear Saved to unlock</span>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Box Height (in)</label>
-                <input type="text" id="input-box-height" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 font-mono font-bold focus:border-blue-500 outline-none" />
+                <input type="text" id="input-box-height" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 font-mono font-bold focus:border-blue-500 outline-none transition-all" />
               </div>
               <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase">Offset From Zero (in)</label>
-                <input type="text" id="input-box-offset" class="w-full h-10 border-2 border-slate-700 bg-slate-950 rounded px-2 font-mono font-bold text-blue-400 focus:border-blue-500 outline-none" />
+                <input type="text" id="input-box-offset" class="w-full h-10 border-2 border-slate-700 bg-slate-950 rounded px-2 font-mono font-bold text-blue-400 focus:border-blue-500 outline-none transition-all" />
               </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-1 col-span-2">
-                <label class="text-[10px] font-bold text-slate-400 uppercase">Placement Note</label>
-                <select id="placement-note" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 text-sm font-medium outline-none">
+            <div class="grid grid-cols-2 gap-4" id="placement-section">
+              <div class="space-y-1" id="placement-area1-container">
+                <label id="label-placement-area1" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Front Area 1 Placement</label>
+                <select id="select-placement-area1" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 text-sm font-medium outline-none focus:border-blue-500 transition-all">
+                  <option value="Match to mockup" selected>Match to mockup</option>
+                  <option value="Collar">Collar</option>
+                  <option value="Max Pocket Size">Max Pocket Size</option>
+                  <option value="Seam">Seam</option>
+                  <option value="Waistband">Waistband</option>
+                </select>
+              </div>
+              <div class="space-y-1" id="placement-area2-container">
+                <label id="label-placement-area2" class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Front Area 2 Placement</label>
+                <select id="select-placement-area2" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 text-sm font-medium outline-none focus:border-indigo-500 transition-all">
                   <option value="Match to mockup" selected>Match to mockup</option>
                   <option value="Collar">Collar</option>
                   <option value="Max Pocket Size">Max Pocket Size</option>
@@ -138,7 +155,7 @@
           <div class="p-4 bg-slate-950 rounded-lg border border-slate-800 space-y-4">
             <div class="flex justify-between items-center">
               <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recording Slots</span>
-              <button id="btn-clear-recording" class="text-[9px] font-semibold text-red-400 hover:text-red-300 transition-colors uppercase">Clear Saved</button>
+              <button id="btn-clear-recording" class="text-[9px] font-semibold text-red-400 hover:text-red-300 transition-colors uppercase">Clear Saved Front</button>
             </div>
             <div class="grid grid-cols-2 gap-3">
               <button id="btn-record-area1" class="h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all text-xs flex flex-col items-center justify-center shadow-lg shadow-blue-900/20">
@@ -286,13 +303,19 @@
     let activeTab = 'front';
     let history = [];
     
-    // Split into individual configs
+    // Config separation
     let frontAreaConfig = 'double';
     let backAreaConfig = 'double';
 
     let backStatus = 'compatible';
-    let placementNote = 'Match to mockup';
 
+    // Separate Area Placement notes per side and layout slot
+    let placementNotes = {
+      front: { area1: 'Match to mockup', area2: 'Match to mockup' },
+      back: { area1: 'Match to mockup', area2: 'Match to mockup' }
+    };
+
+    // Separate front & back calibration guides to guarantee layout adjustments are entirely individual
     let guides = { top: 50, bottom: 450, collar: 100 };
     
     // Core workspace dynamic boxes
@@ -324,7 +347,10 @@
     const tabBack = document.getElementById('tab-back');
     const inputBoxHeight = document.getElementById('input-box-height');
     const inputBoxOffset = document.getElementById('input-box-offset');
-    const selectPlacementNote = document.getElementById('placement-note');
+    
+    const selectPlacementArea1 = document.getElementById('select-placement-area1');
+    const selectPlacementArea2 = document.getElementById('select-placement-area2');
+
     const btnSave = document.getElementById('btn-save');
     const btnCopyHistory = document.getElementById('btn-copy-history');
     const historyContainer = document.getElementById('history-container');
@@ -353,6 +379,7 @@
     const btnRecordArea2 = document.getElementById('btn-record-area2');
     const area2SubLabel = document.getElementById('area2-sub-label');
     const btnClearRecording = document.getElementById('btn-clear-recording');
+    const lockBanner = document.getElementById('lock-banner');
 
     function updatePPI() {
       const pixelDist = guides.bottom - guides.top;
@@ -381,7 +408,23 @@
       }
     }
 
-    function formatBoxCoordinates(box) {
+    // Checking locks helpers - completely isolated tab-level threshold locking
+    function isTabLocked(side) {
+      const currentConfig = (side === 'front') ? frontAreaConfig : backAreaConfig;
+      if (currentConfig === 'single') {
+        // Locked immediately if single area recorded
+        return !!recorded[side].area1;
+      } else {
+        // Only locked if BOTH slots are filled
+        return !!(recorded[side].area1 && recorded[side].area2);
+      }
+    }
+
+    function isAnyLocked() {
+      return isTabLocked('front') || isTabLocked('back');
+    }
+
+    function formatBoxCoordinates(box, side, areaKey) {
       if (!box) return "N/A\tN/A\tN/A\tN/A\tN/A";
       const img = garmentPreview;
 
@@ -401,37 +444,39 @@
       const x2 = Math.round((boxXRelativeToImage + box.width) * scaleX);
       const y2 = Math.round((boxYRelativeToImage + box.height) * scaleY);
 
-      const heightIn = (box.height / ppi).toFixed(2);
-      const distIn = ((box.y - guides.collar) / ppi).toFixed(2);
+      const heightIn = (ppi > 0) ? (box.height / ppi).toFixed(2) : "0.00";
+      const distIn = (ppi > 0) ? ((box.y - guides.collar) / ppi).toFixed(2) : "0.00";
 
-      return `[${x1}, ${y1}]\t[${x2}, ${y2}]\t${heightIn}\t${distIn}\t${placementNote}`;
+      const note = placementNotes[side][areaKey] || 'Match to mockup';
+
+      return `[${x1}, ${y1}]\t[${x2}, ${y2}]\t${heightIn}\t${distIn}\t${note}`;
     }
 
     function getFinalSingleLineOutput() {
       // 1. FRONT AREA 1
       let frontArea1 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (images.front) {
-        frontArea1 = formatBoxCoordinates(recorded.front.area1 || boxes.front);
+        frontArea1 = formatBoxCoordinates(recorded.front.area1 || boxes.front, 'front', 'area1');
       }
 
       // 2. FRONT AREA 2
       let frontArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (images.front && frontAreaConfig === 'double') {
-        frontArea2 = formatBoxCoordinates(recorded.front.area2 || boxes.front);
+        frontArea2 = formatBoxCoordinates(recorded.front.area2 || boxes.front, 'front', 'area2');
       }
 
       // 3. BACK AREA 1
       let backArea1 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (backStatus === 'incompatible') {
-        backArea1 = `[0, 0]\t[0, 0]\t0\t0\t${placementNote}`;
+        backArea1 = `[0, 0]\t[0, 0]\t0\t0\t${placementNotes.back.area1}`;
       } else if (backStatus === 'compatible' && images.back) {
-        backArea1 = formatBoxCoordinates(recorded.back.area1 || boxes.back);
+        backArea1 = formatBoxCoordinates(recorded.back.area1 || boxes.back, 'back', 'area1');
       }
 
       // 4. BACK AREA 2
       let backArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (backStatus === 'compatible' && images.back && backAreaConfig === 'double') {
-        backArea2 = formatBoxCoordinates(recorded.back.area2 || boxes.back);
+        backArea2 = formatBoxCoordinates(recorded.back.area2 || boxes.back, 'back', 'area2');
       }
 
       return `${frontArea1}\t${frontArea2}\t${backArea1}\t${backArea2}`;
@@ -523,6 +568,47 @@
       }
     }
 
+    function syncPlacementUI() {
+      const p1Container = document.getElementById('placement-area1-container');
+      const p2Container = document.getElementById('placement-area2-container');
+      const label1 = document.getElementById('label-placement-area1');
+      const label2 = document.getElementById('label-placement-area2');
+      const select1 = document.getElementById('select-placement-area1');
+      const select2 = document.getElementById('select-placement-area2');
+
+      const sideConfig = (activeTab === 'front') ? frontAreaConfig : backAreaConfig;
+
+      // Assign saved values
+      select1.value = placementNotes[activeTab].area1;
+      select2.value = placementNotes[activeTab].area2;
+
+      // Dynamically label controls depending on layout active state
+      const capitalizedTab = activeTab.toUpperCase();
+      label1.textContent = `${capitalizedTab} Area 1 Placement`;
+      label2.textContent = `${capitalizedTab} Area 2 Placement`;
+
+      // Check lock configurations specifically for placement selects
+      const isA1Captured = !!recorded[activeTab].area1;
+      const isA2Captured = !!recorded[activeTab].area2;
+
+      select1.disabled = isA1Captured;
+      select1.classList.toggle('opacity-50', isA1Captured);
+      select1.classList.toggle('cursor-not-allowed', isA1Captured);
+
+      select2.disabled = isA2Captured;
+      select2.classList.toggle('opacity-50', isA2Captured);
+      select2.classList.toggle('cursor-not-allowed', isA2Captured);
+
+      // Handle visibility styling layout adjustments
+      if (sideConfig === 'single') {
+        p2Container.classList.add('hidden');
+        p1Container.className = "space-y-1 col-span-2";
+      } else {
+        p2Container.classList.remove('hidden');
+        p1Container.className = "space-y-1";
+      }
+    }
+
     function renderRuler() {
       const pixelDist = guides.bottom - guides.top;
       if (pixelDist <= 0 || garmentHeight <= 0) return;
@@ -605,6 +691,9 @@
       // Dynamic button availability state mapping
       updateArea2ButtonState();
 
+      // Dynamic text update for Clear button to focus on active tab
+      btnClearRecording.textContent = `Clear Saved ${activeTab.toUpperCase()}`;
+
       if (!images[activeTab]) {
         canvasPlaceholder.classList.remove('hidden');
         canvasActive.classList.add('hidden');
@@ -624,6 +713,37 @@
       guideBottom.style.top = `${guides.bottom}px`;
       guideCollar.style.top = `${guides.collar}px`;
 
+      // Check layout-specific locks
+      const tabLocked = isTabLocked(activeTab);
+      const globalLocked = isAnyLocked();
+
+      // Toggle warning lock banner per tab
+      if (tabLocked) {
+        lockBanner.classList.remove('hidden');
+        lockBanner.querySelector('.lock-text').textContent = `${activeTab.toUpperCase()} LAYOUT LOCKED (Captures Active).`;
+      } else {
+        lockBanner.classList.add('hidden');
+      }
+
+      // Enable/Disable tab inputs based *solely* on that tab's layout state
+      inputBoxHeight.disabled = tabLocked;
+      inputBoxOffset.disabled = tabLocked;
+      
+      // Garment absolute total remains locked globally to preserve scaling consistency across tabs
+      garmentHeightInput.disabled = globalLocked;
+      btnCenter.disabled = tabLocked;
+
+      // Adjust styles dynamically
+      [inputBoxHeight, inputBoxOffset].forEach(el => {
+        el.classList.toggle('opacity-50', tabLocked);
+        el.classList.toggle('cursor-not-allowed', tabLocked);
+      });
+
+      garmentHeightInput.classList.toggle('opacity-50', globalLocked);
+      garmentHeightInput.classList.toggle('cursor-not-allowed', globalLocked);
+      btnCenter.classList.toggle('opacity-50', tabLocked);
+      btnCenter.classList.toggle('cursor-not-allowed', tabLocked);
+
       // Manage Visual Box State
       const blockoutBack = activeTab === 'back' && backStatus === 'none';
       const incompatibleBack = activeTab === 'back' && backStatus === 'incompatible';
@@ -642,28 +762,52 @@
         printAreaBox.style.width = `${box.width}px`;
         printAreaBox.style.height = `${box.height}px`;
 
-        if (activeTab === 'front') {
-          printAreaBox.className = "absolute border-2 border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
-          printBoxLabel.textContent = "FRONT (ACTIVE)";
-          printBoxLabel.className = "absolute top-0 left-0 bg-blue-500 text-white text-[8px] px-1 font-bold";
+        // Switch box rendering styles if active or locked
+        if (tabLocked) {
+          printAreaBox.className = "absolute border-2 border-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20 transition-all";
+          printBoxLabel.textContent = `${activeTab.toUpperCase()} AREA (LOCKED 🔒)`;
+          printBoxLabel.className = "absolute top-0 left-0 bg-amber-500 text-slate-950 text-[8px] px-1.5 py-0.5 font-bold rounded-br";
+          resizeHandle.classList.add('hidden');
         } else {
-          printAreaBox.className = "absolute border-2 border-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
-          printBoxLabel.textContent = "BACK (ACTIVE)";
-          printBoxLabel.className = "absolute top-0 left-0 bg-orange-500 text-white text-[8px] px-1 font-bold";
+          resizeHandle.classList.remove('hidden');
+          if (activeTab === 'front') {
+            printAreaBox.className = "absolute border-2 border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
+            printBoxLabel.textContent = "FRONT (ACTIVE)";
+            printBoxLabel.className = "absolute top-0 left-0 bg-blue-500 text-white text-[8px] px-1 font-bold";
+          } else {
+            printAreaBox.className = "absolute border-2 border-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
+            printBoxLabel.textContent = "BACK (ACTIVE)";
+            printBoxLabel.className = "absolute top-0 left-0 bg-orange-500 text-white text-[8px] px-1 font-bold";
+          }
         }
 
-        const coords = formatBoxCoordinates(box).split('\t');
+        const coords = formatBoxCoordinates(box, activeTab, 'area1').split('\t');
         tagTl.textContent = `TL: ${coords[0] || '---'}`;
         tagBr.textContent = `BR: ${coords[1] || '---'}`;
       }
 
       renderRuler();
       renderGhostBoxes();
+      syncPlacementUI();
       updateOutputs();
     }
 
     function setupDragging() {
       const handleStart = (e, type, id) => {
+        const sideLocked = isTabLocked(activeTab);
+        
+        // Block workspace interactions if side is locked
+        if (type === 'guide' && sideLocked) {
+          showNotification(`Calibration locked for ${activeTab.toUpperCase()}. Clear layout 1/2 to adjust.`);
+          e.preventDefault();
+          return;
+        }
+        if ((type === 'box' || type === 'resize') && sideLocked) {
+          showNotification(`Print area locked for ${activeTab.toUpperCase()}. Clear layout 1/2 to adjust.`);
+          e.preventDefault();
+          return;
+        }
+
         e.preventDefault();
         const touch = e.touches ? e.touches[0] : e;
         const initial = type === 'guide' ? guides[id] : { ...boxes[activeTab] };
@@ -760,12 +904,11 @@
       renderCanvas();
     });
 
+    // Clear active layout recording only, leaving other layout untouched
     btnClearRecording.addEventListener('click', () => {
-      recorded.front.area1 = null;
-      recorded.front.area2 = null;
-      recorded.back.area1 = null;
-      recorded.back.area2 = null;
-      showNotification("Cleared saved slots. Reverted to live tracking.");
+      recorded[activeTab].area1 = null;
+      recorded[activeTab].area2 = null;
+      showNotification(`Unlocked active ${activeTab.toUpperCase()} canvas. Reverted to live tracking.`);
       renderCanvas();
     });
 
@@ -784,8 +927,15 @@
       renderCanvas();
     });
 
-    selectPlacementNote.addEventListener('change', e => {
-      placementNote = e.target.value;
+    // Handle updates on Area 1 Placement Select
+    selectPlacementArea1.addEventListener('change', e => {
+      placementNotes[activeTab].area1 = e.target.value;
+      renderCanvas();
+    });
+
+    // Handle updates on Area 2 Placement Select
+    selectPlacementArea2.addEventListener('change', e => {
+      placementNotes[activeTab].area2 = e.target.value;
       renderCanvas();
     });
 
@@ -863,7 +1013,7 @@
     setupUpload(uploadFront, document.getElementById('front-status'), 'front');
     setupUpload(uploadBack, document.getElementById('back-upload-status'), 'back');
 
-    // Align frame horizontally to center
+    // Align active frame horizontally to center
     btnCenter.addEventListener('click', () => {
       const rect = canvasContainer.getBoundingClientRect();
       const activeBox = boxes[activeTab];
