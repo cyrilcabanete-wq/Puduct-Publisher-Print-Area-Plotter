@@ -315,7 +315,7 @@
       back: { area1: 'Match to mockup', area2: 'Match to mockup' }
     };
 
-    // Separate front & back calibration guides to guarantee layout adjustments are entirely individual
+    // Reference calibration guides
     let guides = { top: 50, bottom: 450, collar: 100 };
     
     // Core workspace dynamic boxes
@@ -408,14 +408,11 @@
       }
     }
 
-    // Checking locks helpers - completely isolated tab-level threshold locking
     function isTabLocked(side) {
       const currentConfig = (side === 'front') ? frontAreaConfig : backAreaConfig;
       if (currentConfig === 'single') {
-        // Locked immediately if single area recorded
         return !!recorded[side].area1;
       } else {
-        // Only locked if BOTH slots are filled
         return !!(recorded[side].area1 && recorded[side].area2);
       }
     }
@@ -426,6 +423,12 @@
 
     function formatBoxCoordinates(box, side, areaKey) {
       if (!box) return "N/A\tN/A\tN/A\tN/A\tN/A";
+      
+      // If the box has a frozen calculation string, return it directly
+      if (box.formatted) {
+        return box.formatted;
+      }
+
       const img = garmentPreview;
 
       const displayedWidth = img.clientWidth || 400; 
@@ -456,13 +459,21 @@
       // 1. FRONT AREA 1
       let frontArea1 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (images.front) {
-        frontArea1 = formatBoxCoordinates(recorded.front.area1 || boxes.front, 'front', 'area1');
+        if (recorded.front.area1) {
+          frontArea1 = formatBoxCoordinates(recorded.front.area1, 'front', 'area1');
+        } else if (activeTab === 'front') {
+          frontArea1 = formatBoxCoordinates(boxes.front, 'front', 'area1');
+        }
       }
 
       // 2. FRONT AREA 2
       let frontArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (images.front && frontAreaConfig === 'double') {
-        frontArea2 = formatBoxCoordinates(recorded.front.area2 || boxes.front, 'front', 'area2');
+        if (recorded.front.area2) {
+          frontArea2 = formatBoxCoordinates(recorded.front.area2, 'front', 'area2');
+        } else if (activeTab === 'front') {
+          frontArea2 = formatBoxCoordinates(boxes.front, 'front', 'area2');
+        }
       }
 
       // 3. BACK AREA 1
@@ -470,13 +481,21 @@
       if (backStatus === 'incompatible') {
         backArea1 = `[0, 0]\t[0, 0]\t0\t0\t${placementNotes.back.area1}`;
       } else if (backStatus === 'compatible' && images.back) {
-        backArea1 = formatBoxCoordinates(recorded.back.area1 || boxes.back, 'back', 'area1');
+        if (recorded.back.area1) {
+          backArea1 = formatBoxCoordinates(recorded.back.area1, 'back', 'area1');
+        } else if (activeTab === 'back') {
+          backArea1 = formatBoxCoordinates(boxes.back, 'back', 'area1');
+        }
       }
 
       // 4. BACK AREA 2
       let backArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
       if (backStatus === 'compatible' && images.back && backAreaConfig === 'double') {
-        backArea2 = formatBoxCoordinates(recorded.back.area2 || boxes.back, 'back', 'area2');
+        if (recorded.back.area2) {
+          backArea2 = formatBoxCoordinates(recorded.back.area2, 'back', 'area2');
+        } else if (activeTab === 'back') {
+          backArea2 = formatBoxCoordinates(boxes.back, 'back', 'area2');
+        }
       }
 
       return `${frontArea1}\t${frontArea2}\t${backArea1}\t${backArea2}`;
@@ -560,7 +579,6 @@
       }
     }
 
-    // Always keep inputs up to date during interactions
     function syncInputs() {
       if (ppi > 0) {
         inputBoxHeight.value = (boxes[activeTab].height / ppi).toFixed(2);
@@ -675,7 +693,6 @@
       });
     }
 
-    // Helper to dynamic lock states on slot captures
     function updateArea2ButtonState() {
       const currentConfig = (activeTab === 'front') ? frontAreaConfig : backAreaConfig;
       if (currentConfig === 'single') {
@@ -688,10 +705,8 @@
     }
 
     function renderCanvas() {
-      // Dynamic button availability state mapping
       updateArea2ButtonState();
 
-      // Dynamic text update for Clear button to focus on active tab
       btnClearRecording.textContent = `Clear Saved ${activeTab.toUpperCase()}`;
 
       if (!images[activeTab]) {
@@ -708,16 +723,13 @@
 
       garmentPreview.src = images[activeTab];
       
-      // Update Calibration Guides top values
       guideTop.style.top = `${guides.top}px`;
       guideBottom.style.top = `${guides.bottom}px`;
       guideCollar.style.top = `${guides.collar}px`;
 
-      // Check layout-specific locks
       const tabLocked = isTabLocked(activeTab);
       const globalLocked = isAnyLocked();
 
-      // Toggle warning lock banner per tab
       if (tabLocked) {
         lockBanner.classList.remove('hidden');
         lockBanner.querySelector('.lock-text').textContent = `${activeTab.toUpperCase()} LAYOUT LOCKED (Captures Active).`;
@@ -725,15 +737,12 @@
         lockBanner.classList.add('hidden');
       }
 
-      // Enable/Disable tab inputs based *solely* on that tab's layout state
       inputBoxHeight.disabled = tabLocked;
       inputBoxOffset.disabled = tabLocked;
       
-      // Garment absolute total remains locked globally to preserve scaling consistency across tabs
       garmentHeightInput.disabled = globalLocked;
       btnCenter.disabled = tabLocked;
 
-      // Adjust styles dynamically
       [inputBoxHeight, inputBoxOffset].forEach(el => {
         el.classList.toggle('opacity-50', tabLocked);
         el.classList.toggle('cursor-not-allowed', tabLocked);
@@ -744,7 +753,6 @@
       btnCenter.classList.toggle('opacity-50', tabLocked);
       btnCenter.classList.toggle('cursor-not-allowed', tabLocked);
 
-      // Manage Visual Box State
       const blockoutBack = activeTab === 'back' && backStatus === 'none';
       const incompatibleBack = activeTab === 'back' && backStatus === 'incompatible';
 
@@ -753,6 +761,7 @@
         printAreaBox.classList.add('hidden');
         blockoutMessage.textContent = blockoutBack ? 'No Back Image Selected' : 'Incompatible Print Area (Locks to zero)';
       } else {
+        canvasBlockout.style.display = 'none';
         canvasBlockout.classList.add('hidden');
         printAreaBox.classList.remove('hidden');
         
@@ -762,7 +771,6 @@
         printAreaBox.style.width = `${box.width}px`;
         printAreaBox.style.height = `${box.height}px`;
 
-        // Switch box rendering styles if active or locked
         if (tabLocked) {
           printAreaBox.className = "absolute border-2 border-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20 transition-all";
           printBoxLabel.textContent = `${activeTab.toUpperCase()} AREA (LOCKED 🔒)`;
@@ -781,7 +789,8 @@
           }
         }
 
-        const coords = formatBoxCoordinates(box, activeTab, 'area1').split('\t');
+        const calculatedBox = recorded[activeTab].area1 || boxes[activeTab];
+        const coords = formatBoxCoordinates(calculatedBox, activeTab, 'area1').split('\t');
         tagTl.textContent = `TL: ${coords[0] || '---'}`;
         tagBr.textContent = `BR: ${coords[1] || '---'}`;
       }
@@ -796,7 +805,6 @@
       const handleStart = (e, type, id) => {
         const sideLocked = isTabLocked(activeTab);
         
-        // Block workspace interactions if side is locked
         if (type === 'guide' && sideLocked) {
           showNotification(`Calibration locked for ${activeTab.toUpperCase()}. Clear layout 1/2 to adjust.`);
           e.preventDefault();
@@ -820,7 +828,6 @@
         };
       };
 
-      // Guide element starts
       guideTop.addEventListener('mousedown', e => handleStart(e, 'guide', 'top'));
       guideTop.addEventListener('touchstart', e => handleStart(e, 'guide', 'top'), { passive: false });
 
@@ -830,7 +837,6 @@
       guideCollar.addEventListener('mousedown', e => handleStart(e, 'guide', 'collar'));
       guideCollar.addEventListener('touchstart', e => handleStart(e, 'guide', 'collar'), { passive: false });
 
-      // Box and Resize starts
       printAreaBox.addEventListener('mousedown', e => {
         if (e.target === resizeHandle || resizeHandle.contains(e.target)) return;
         handleStart(e, 'box', activeTab);
@@ -843,7 +849,6 @@
       resizeHandle.addEventListener('mousedown', e => handleStart(e, 'resize', activeTab));
       resizeHandle.addEventListener('touchstart', e => handleStart(e, 'resize', activeTab), { passive: false });
 
-      // Window drag update
       const handleMove = (e) => {
         if (!dragState) return;
         const touch = e.touches ? e.touches[0] : e;
@@ -887,7 +892,11 @@
         showError(`Please upload the ${activeTab.toUpperCase()} image first.`);
         return;
       }
-      recorded[activeTab].area1 = { ...boxes[activeTab] };
+      
+      const frozenBox = { ...boxes[activeTab] };
+      frozenBox.formatted = formatBoxCoordinates(frozenBox, activeTab, 'area1');
+
+      recorded[activeTab].area1 = frozenBox;
       showNotification(`Saved Active Box as ${activeTab.toUpperCase()} Area 1`);
       renderCanvas();
     });
@@ -899,12 +908,15 @@
       }
       const currentConfig = (activeTab === 'front') ? frontAreaConfig : backAreaConfig;
       if (currentConfig !== 'double') return;
-      recorded[activeTab].area2 = { ...boxes[activeTab] };
+      
+      const frozenBox = { ...boxes[activeTab] };
+      frozenBox.formatted = formatBoxCoordinates(frozenBox, activeTab, 'area2');
+
+      recorded[activeTab].area2 = frozenBox;
       showNotification(`Saved Active Box as ${activeTab.toUpperCase()} Area 2`);
       renderCanvas();
     });
 
-    // Clear active layout recording only, leaving other layout untouched
     btnClearRecording.addEventListener('click', () => {
       recorded[activeTab].area1 = null;
       recorded[activeTab].area2 = null;
@@ -927,13 +939,11 @@
       renderCanvas();
     });
 
-    // Handle updates on Area 1 Placement Select
     selectPlacementArea1.addEventListener('change', e => {
       placementNotes[activeTab].area1 = e.target.value;
       renderCanvas();
     });
 
-    // Handle updates on Area 2 Placement Select
     selectPlacementArea2.addEventListener('change', e => {
       placementNotes[activeTab].area2 = e.target.value;
       renderCanvas();
@@ -1013,7 +1023,6 @@
     setupUpload(uploadFront, document.getElementById('front-status'), 'front');
     setupUpload(uploadBack, document.getElementById('back-upload-status'), 'back');
 
-    // Align active frame horizontally to center
     btnCenter.addEventListener('click', () => {
       const rect = canvasContainer.getBoundingClientRect();
       const activeBox = boxes[activeTab];
@@ -1021,7 +1030,6 @@
       renderCanvas();
     });
 
-    // Capture dynamic high resolution workspace preview
     btnScreenshot.addEventListener('click', async () => {
       if (!images[activeTab] || !window.html2canvas) return;
       
@@ -1057,7 +1065,6 @@
       const time = new Date().toLocaleTimeString();
       history.unshift({ id: Date.now(), data: output, time });
 
-      // Render history list
       noHistoryPlaceholder.classList.add('hidden');
       
       const entry = document.createElement('div');
