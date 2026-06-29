@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garment Sizer Pro - Advanced Multi-Area Recorder</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas for preview screenshot functionality -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="min-h-screen bg-slate-950 p-4 md:p-8 text-slate-100 font-sans selection:bg-blue-600 selection:text-white">
+
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Left Column: Controls and Settings -->
+    <div class="lg:col-span-5 space-y-6">
+      <div class="bg-slate-900 rounded-xl shadow-2xl border border-slate-800 overflow-hidden">
+        <!-- Header -->
+        <div class="p-4 border-b border-slate-800 bg-slate-950/50 flex items-center justify-between font-bold text-xl">
+          <div class="flex items-center gap-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500 animate-pulse"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            <span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Garment Sizer Pro</span>
+          </div>
+          <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono border border-slate-700">v2.1</span>
+        </div>
+        
+        <!-- Setup Grid -->
+        <div class="p-6 space-y-6">
+          <!-- Notification / Error Box -->
+          <div id="error-box" class="p-3 bg-red-950/80 border border-red-500/50 rounded-lg hidden flex items-center gap-2 text-red-300 text-xs font-bold animate-pulse">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="error-message"></span>
+          </div>
+
+          <!-- Configuration Controls -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Print Area Setup</label>
+              <select id="area-config" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <option value="single">Single Area (Appends 5 N/A)</option>
+                <option value="double" selected>Double Area (Recording Active)</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-purple-400 uppercase tracking-wider">Back Compatibility</label>
+              <select id="back-status" class="w-full h-10 border-2 border-slate-700 rounded-lg px-2 bg-slate-950 font-bold text-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+                <option value="none">No Back Image</option>
+                <option value="incompatible">Incompatible Print Area</option>
+                <option value="compatible" selected>Compatible / Active</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Image Dropzones -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">Front Image (1000x1000)</label>
+              <div class="relative border-2 border-dashed border-slate-700 rounded-lg p-2 text-center hover:bg-slate-800/50 hover:border-blue-500 transition-colors cursor-pointer">
+                <input type="file" id="upload-front" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-500"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <span id="front-status" class="text-[10px] block mt-1 font-bold text-slate-400">Upload Front</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">Back Image (1000x1000)</label>
+              <div class="relative border-2 border-dashed border-slate-700 rounded-lg p-2 text-center hover:bg-slate-800/50 hover:border-purple-500 transition-colors cursor-pointer">
+                <input type="file" id="upload-back" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-slate-500"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <span id="back-upload-status" class="text-[10px] block mt-1 font-bold text-slate-400">Upload Back</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Garment Height and Utilities -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">Garment Total H (in)</label>
+              <input type="text" id="garment-height" value="28" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-3 font-bold focus:border-blue-500 outline-none" />
+            </div>
+            <div class="flex items-end gap-2">
+              <button id="btn-center" class="flex-1 h-10 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 3 6 6-6 6-6-6 6-6Z"/><path d="M9 21 3 15l6-6 6 6-6 6Z"/></svg>
+                Center
+              </button>
+              <button id="btn-screenshot" disabled class="h-10 px-3 border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-md font-medium transition-all flex items-center justify-center gap-2 text-sm shadow">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabs Front/Back -->
+          <div class="flex border-b-2 border-slate-800">
+            <button id="tab-front" class="flex-1 py-3 text-xs font-bold transition-all border-b-4 border-blue-500 text-blue-400">FRONT</button>
+            <button id="tab-back" class="flex-1 py-3 text-xs font-bold transition-all text-slate-500 hover:text-slate-300">BACK</button>
+          </div>
+
+          <!-- Printable Area Specs -->
+          <div class="space-y-4 pt-2">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Box Height (in)</label>
+                <input type="text" id="input-box-height" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 font-mono font-bold focus:border-blue-500 outline-none" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Offset From Zero (in)</label>
+                <input type="text" id="input-box-offset" class="w-full h-10 border-2 border-slate-700 bg-slate-950 rounded px-2 font-mono font-bold text-blue-400 focus:border-blue-500 outline-none" />
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1 col-span-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase">Placement Note</label>
+                <select id="placement-note" class="w-full h-10 border-2 border-slate-700 bg-slate-950 text-slate-100 rounded px-2 text-sm font-medium outline-none">
+                  <option value="Match to mockup" selected>Match to mockup</option>
+                  <option value="Collar">Collar</option>
+                  <option value="Max Pocket Size">Max Pocket Size</option>
+                  <option value="Seam">Seam</option>
+                  <option value="Waistband">Waistband</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Area Recording Slot Controls Section -->
+          <div class="p-4 bg-slate-950 rounded-lg border border-slate-800 space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Recording Slots</span>
+              <button id="btn-clear-recording" class="text-[9px] font-semibold text-red-400 hover:text-red-300 transition-colors uppercase">Clear Saved</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btn-record-area1" class="h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-all text-xs flex flex-col items-center justify-center shadow-lg shadow-blue-900/20">
+                <span class="uppercase tracking-wider">Record Area 1</span>
+                <span class="text-[8px] font-normal text-blue-100 opacity-85">Save Active Frame</span>
+              </button>
+              <button id="btn-record-area2" class="h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold transition-all text-xs flex flex-col items-center justify-center shadow-lg shadow-indigo-900/20 disabled:opacity-40 disabled:hover:bg-indigo-600 disabled:cursor-not-allowed">
+                <span class="uppercase tracking-wider">Record Area 2</span>
+                <span class="text-[8px] font-normal text-indigo-100 opacity-85" id="area2-sub-label">Save Active Frame</span>
+              </button>
+            </div>
+
+            <!-- Captured Slots Feedback List -->
+            <div class="text-[10px] space-y-2 border-t border-slate-800/80 pt-3">
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="font-medium">Front Area 1:</span>
+                <span id="slot-front-1-badge" class="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-yellow-500 border border-slate-700">Live Syncing</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="font-medium">Front Area 2:</span>
+                <span id="slot-front-2-badge" class="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Locked N/A</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="font-medium">Back Area 1:</span>
+                <span id="slot-back-1-badge" class="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">No Back Image</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="font-medium">Back Area 2:</span>
+                <span id="slot-back-2-badge" class="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Locked N/A</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-save" class="w-full h-12 bg-indigo-500 text-white hover:bg-indigo-600 rounded-md font-bold transition-all shadow-md shadow-indigo-900/20 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
+            Save History Entry
+          </button>
+        </div>
+      </div>
+
+      <!-- History Card -->
+      <div class="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+        <div class="p-3 border-b border-slate-800 bg-slate-950 text-[10px] font-bold uppercase text-slate-400 flex justify-between items-center">
+          <span>History Log</span>
+          <button id="btn-copy-history" class="text-blue-400 hover:underline">Copy All History</button>
+        </div>
+        <div id="history-container" class="max-h-[250px] overflow-y-auto divide-y divide-slate-800">
+          <div id="no-history-placeholder" class="p-8 text-center text-xs text-slate-500">No entries yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Canvas & Outputs -->
+    <div class="lg:col-span-7 space-y-4">
+      <div id="canvas-container" class="relative w-full aspect-square bg-slate-950 rounded-2xl border-8 border-slate-900 shadow-2xl overflow-hidden touch-none group">
+        <!-- Interactive layers will be dynamically injected/manipulated in Javascript -->
+        <div id="canvas-placeholder" class="flex flex-col items-center justify-center h-full text-slate-600 space-y-4">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          <div id="placeholder-text" class="font-bold uppercase tracking-[0.2em] text-sm text-center">Waiting for Front Image</div>
+        </div>
+
+        <!-- Loaded State Elements (initially hidden) -->
+        <div id="canvas-active" class="hidden w-full h-full relative">
+          <img id="garment-preview" class="w-full h-full object-contain pointer-events-none" alt="Preview Image" />
+          
+          <!-- Dynamic Ruler Area -->
+          <div id="ruler-layer" class="absolute left-0 w-8 bg-black/50 backdrop-blur-[2px] border-r border-white/10 z-10 pointer-events-none transition-all"></div>
+
+          <!-- Center Guide Line -->
+          <div class="absolute left-1/2 top-0 bottom-0 w-px bg-white/25 pointer-events-none"></div>
+
+          <!-- Draggable Guide lines -->
+          <div id="guide-top" class="absolute w-full h-1.5 bg-purple-500/60 cursor-ns-resize hover:bg-purple-500 z-30 transition-colors">
+            <span class="absolute right-2 -top-4 text-[9px] font-bold text-purple-400 bg-slate-950/90 border border-purple-900 px-1 rounded">H-TOP</span>
+          </div>
+          <div id="guide-bottom" class="absolute w-full h-1.5 bg-red-500/60 cursor-ns-resize hover:bg-red-500 z-30 transition-colors">
+            <span class="absolute right-2 top-2 text-[9px] font-bold text-red-400 bg-slate-950/90 border border-red-900 px-1 rounded">H-BOTTOM</span>
+          </div>
+          <div id="guide-collar" class="absolute w-full h-0.5 border-t-2 border-dashed border-blue-400/80 cursor-ns-resize hover:border-blue-500 z-30 transition-colors">
+            <span class="absolute left-10 -top-4 text-[9px] font-bold text-blue-400 bg-slate-950/90 border border-blue-900 px-1 rounded whitespace-nowrap">ZERO-REF</span>
+          </div>
+
+          <!-- Ghost Overlay Boxes for Recorded Areas -->
+          <div id="ghost-front-1" class="absolute border border-dashed border-blue-400 bg-blue-500/5 pointer-events-none hidden z-10 transition-all">
+            <span class="absolute top-1 left-1 bg-blue-500 text-white text-[7px] px-1 font-bold rounded">FRONT AREA 1</span>
+          </div>
+          <div id="ghost-front-2" class="absolute border border-dashed border-teal-400 bg-teal-500/5 pointer-events-none hidden z-10 transition-all">
+            <span class="absolute top-1 left-1 bg-teal-600 text-white text-[7px] px-1 font-bold rounded">FRONT AREA 2</span>
+          </div>
+          <div id="ghost-back-1" class="absolute border border-dashed border-orange-400 bg-orange-500/5 pointer-events-none hidden z-10 transition-all">
+            <span class="absolute top-1 left-1 bg-orange-500 text-white text-[7px] px-1 font-bold rounded">BACK AREA 1</span>
+          </div>
+          <div id="ghost-back-2" class="absolute border border-dashed border-amber-400 bg-amber-500/5 pointer-events-none hidden z-10 transition-all">
+            <span class="absolute top-1 left-1 bg-amber-600 text-white text-[7px] px-1 font-bold rounded">BACK AREA 2</span>
+          </div>
+
+          <!-- Draggable/Resizable Print Area Box -->
+          <div id="print-area-box" class="absolute border-2 border-blue-500 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20">
+            <!-- Box Title Label -->
+            <div id="print-box-label" class="absolute top-0 left-0 bg-blue-500 text-white text-[8px] px-1 font-bold">FRONT</div>
+            
+            <!-- Real-time coordinate tags -->
+            <div id="tag-tl" class="absolute -top-6 left-0 bg-blue-500 text-white text-[9px] px-1 font-mono rounded-t">TL: ---</div>
+            <div id="tag-br" class="absolute -bottom-6 right-0 bg-blue-500 text-white text-[9px] px-1 font-mono rounded-b">BR: ---</div>
+
+            <!-- Drag corner handle for resizing -->
+            <div id="resize-handle" class="absolute bottom-0 right-0 w-8 h-8 bg-blue-500 cursor-se-resize flex items-center justify-center rounded-tl-lg shadow-inner hover:bg-blue-600 transition-colors">
+              <div class="w-3 h-3 border-r-2 border-b-2 border-white opacity-80"></div>
+            </div>
+          </div>
+
+          <!-- Canvas Blockout Screen (for inactive states) -->
+          <div id="canvas-blockout" class="absolute inset-0 bg-black/70 flex items-center justify-center pointer-events-none z-40 hidden">
+            <div id="blockout-message" class="bg-slate-900 text-slate-200 px-4 py-2 rounded-lg font-bold text-xs uppercase shadow-xl border-2 border-red-500">No Back Image Uploaded</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Output Strips -->
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Main Unified Output Strip -->
+        <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div class="flex flex-col overflow-hidden w-full">
+            <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Unified Export Output (Single Line)</span>
+            <div class="w-full bg-slate-950 border border-slate-800 rounded p-2.5">
+              <span id="output-main-data" class="font-mono text-[11px] font-bold text-slate-300 break-all select-all block leading-relaxed">---</span>
+            </div>
+          </div>
+          <button id="btn-copy-main" class="w-full md:w-auto shrink-0 px-5 py-3 border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-md font-bold text-xs uppercase tracking-wider transition-all self-stretch flex items-center justify-center">COPY LINE</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Custom Alert Toast UI -->
+  <div id="alert-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 p-4 bg-slate-900 text-slate-100 border border-blue-500/50 rounded-lg shadow-xl flex items-center gap-3">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span id="toast-message" class="text-sm font-medium">Text Copied!</span>
+  </div>
+
+  <!-- Application Engine -->
+  <script>
+    let garmentHeight = 28;
+    let images = { front: null, back: null };
+    let activeTab = 'front';
+    let history = [];
+    let areaConfig = 'double';
+    let backStatus = 'compatible';
+    let placementNote = 'Match to mockup';
+
+    let guides = { top: 50, bottom: 450, collar: 100 };
+    
+    // Core workspace dynamic boxes
+    let boxes = {
+      front: { x: 100, y: 120, width: 150, height: 200 },
+      back: { x: 100, y: 120, width: 150, height: 200 }
+    };
+
+    // Advanced manual recorded coordinates
+    let recorded = {
+      front: { area1: null, area2: null },
+      back: { area1: null, area2: null }
+    };
+    
+    let ppi = 0;
+    let dragState = null;
+
+    const errorBox = document.getElementById('error-box');
+    const errorMessage = document.getElementById('error-message');
+    const selectAreaConfig = document.getElementById('area-config');
+    const selectBackStatus = document.getElementById('back-status');
+    const uploadFront = document.getElementById('upload-front');
+    const uploadBack = document.getElementById('upload-back');
+    const garmentHeightInput = document.getElementById('garment-height');
+    const btnCenter = document.getElementById('btn-center');
+    const btnScreenshot = document.getElementById('btn-screenshot');
+    const tabFront = document.getElementById('tab-front');
+    const tabBack = document.getElementById('tab-back');
+    const inputBoxHeight = document.getElementById('input-box-height');
+    const inputBoxOffset = document.getElementById('input-box-offset');
+    const selectPlacementNote = document.getElementById('placement-note');
+    const btnSave = document.getElementById('btn-save');
+    const btnCopyHistory = document.getElementById('btn-copy-history');
+    const historyContainer = document.getElementById('history-container');
+    const noHistoryPlaceholder = document.getElementById('no-history-placeholder');
+
+    const canvasContainer = document.getElementById('canvas-container');
+    const canvasPlaceholder = document.getElementById('canvas-placeholder');
+    const canvasActive = document.getElementById('canvas-active');
+    const garmentPreview = document.getElementById('garment-preview');
+    const rulerLayer = document.getElementById('ruler-layer');
+    const guideTop = document.getElementById('guide-top');
+    const guideBottom = document.getElementById('guide-bottom');
+    const guideCollar = document.getElementById('guide-collar');
+    const printAreaBox = document.getElementById('print-area-box');
+    const printBoxLabel = document.getElementById('print-box-label');
+    const tagTl = document.getElementById('tag-tl');
+    const tagBr = document.getElementById('tag-br');
+    const resizeHandle = document.getElementById('resize-handle');
+    const canvasBlockout = document.getElementById('canvas-blockout');
+    const blockoutMessage = document.getElementById('blockout-message');
+
+    const outputMainData = document.getElementById('output-main-data');
+    const btnCopyMain = document.getElementById('btn-copy-main');
+
+    const btnRecordArea1 = document.getElementById('btn-record-area1');
+    const btnRecordArea2 = document.getElementById('btn-record-area2');
+    const area2SubLabel = document.getElementById('area2-sub-label');
+    const btnClearRecording = document.getElementById('btn-clear-recording');
+
+    function updatePPI() {
+      const pixelDist = guides.bottom - guides.top;
+      if (pixelDist > 0 && garmentHeight > 0) {
+        ppi = pixelDist / garmentHeight;
+      }
+    }
+
+    function showNotification(msg) {
+      const toast = document.getElementById('alert-toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2000);
+    }
+
+    function showError(msg) {
+      if (msg) {
+        errorMessage.textContent = msg;
+        errorBox.classList.remove('hidden');
+      } else {
+        errorBox.classList.add('hidden');
+      }
+    }
+
+    function formatBoxCoordinates(box) {
+      if (!box) return "N/A\tN/A\tN/A\tN/A\tN/A";
+      const img = garmentPreview;
+
+      const displayedWidth = img.clientWidth || 400; 
+      const displayedHeight = img.clientHeight || 400;
+      const imageOffsetLeft = img.offsetLeft || 0;
+      const imageOffsetTop = img.offsetTop || 0;
+
+      const boxXRelativeToImage = box.x - imageOffsetLeft;
+      const boxYRelativeToImage = box.y - imageOffsetTop;
+
+      const scaleX = 1000 / displayedWidth;
+      const scaleY = 1000 / displayedHeight;
+
+      const x1 = Math.round(boxXRelativeToImage * scaleX);
+      const y1 = Math.round(boxYRelativeToImage * scaleY);
+      const x2 = Math.round((boxXRelativeToImage + box.width) * scaleX);
+      const y2 = Math.round((boxYRelativeToImage + box.height) * scaleY);
+
+      const heightIn = (box.height / ppi).toFixed(2);
+      const distIn = ((box.y - guides.collar) / ppi).toFixed(2);
+
+      return `[${x1}, ${y1}]\t[${x2}, ${y2}]\t${heightIn}\t${distIn}\t${placementNote}`;
+    }
+
+    function getFinalSingleLineOutput() {
+      // 1. FRONT AREA 1
+      let frontArea1 = "N/A\tN/A\tN/A\tN/A\tN/A";
+      if (images.front) {
+        frontArea1 = formatBoxCoordinates(recorded.front.area1 || boxes.front);
+      }
+
+      // 2. FRONT AREA 2
+      let frontArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
+      if (images.front && areaConfig === 'double') {
+        frontArea2 = formatBoxCoordinates(recorded.front.area2 || boxes.front);
+      }
+
+      // 3. BACK AREA 1
+      let backArea1 = "N/A\tN/A\tN/A\tN/A\tN/A";
+      if (backStatus === 'incompatible') {
+        backArea1 = `[0, 0]\t[0, 0]\t0\t0\t${placementNote}`;
+      } else if (backStatus === 'compatible' && images.back) {
+        backArea1 = formatBoxCoordinates(recorded.back.area1 || boxes.back);
+      }
+
+      // 4. BACK AREA 2
+      let backArea2 = "N/A\tN/A\tN/A\tN/A\tN/A";
+      if (backStatus === 'compatible' && images.back && areaConfig === 'double') {
+        backArea2 = formatBoxCoordinates(recorded.back.area2 || boxes.back);
+      }
+
+      return `${frontArea1}\t${frontArea2}\t${backArea1}\t${backArea2}`;
+    }
+
+    function updateOutputs() {
+      const finalStr = getFinalSingleLineOutput();
+      outputMainData.textContent = finalStr;
+
+      // Update badge elements
+      updateBadgeStates();
+    }
+
+    function updateBadgeStates() {
+      const f1Badge = document.getElementById('slot-front-1-badge');
+      const f2Badge = document.getElementById('slot-front-2-badge');
+      const b1Badge = document.getElementById('slot-back-1-badge');
+      const b2Badge = document.getElementById('slot-back-2-badge');
+
+      // Front Slot 1
+      if (!images.front) {
+        f1Badge.textContent = "No Front Image";
+        f1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+      } else if (recorded.front.area1) {
+        f1Badge.textContent = "Captured 💾";
+        f1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800";
+      } else {
+        f1Badge.textContent = "Live Syncing 🟢";
+        f1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-400 border border-blue-800";
+      }
+
+      // Front Slot 2
+      if (!images.front) {
+        f2Badge.textContent = "No Front Image";
+        f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+      } else if (areaConfig === 'single') {
+        f2Badge.textContent = "Locked N/A 🔒";
+        f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
+      } else if (recorded.front.area2) {
+        f2Badge.textContent = "Captured 💾";
+        f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800";
+      } else {
+        f2Badge.textContent = "Active / Unsaved ⚪";
+        f2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-slate-700";
+      }
+
+      // Back Slot 1
+      if (backStatus === 'none') {
+        b1Badge.textContent = "No Back Image 🔒";
+        b1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
+      } else if (backStatus === 'incompatible') {
+        b1Badge.textContent = "Incompatible (Set 0) ⚠️";
+        b1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-red-950/80 text-red-400 border border-red-800";
+      } else if (!images.back) {
+        b1Badge.textContent = "Upload Pending 📤";
+        b1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+      } else if (recorded.back.area1) {
+        b1Badge.textContent = "Captured 💾";
+        b1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800";
+      } else {
+        b1Badge.textContent = "Live Syncing 🟢";
+        b1Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-400 border border-blue-800";
+      }
+
+      // Back Slot 2
+      if (backStatus === 'none' || backStatus === 'incompatible') {
+        b2Badge.textContent = "Locked N/A 🔒";
+        b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
+      } else if (areaConfig === 'single') {
+        b2Badge.textContent = "Locked N/A 🔒";
+        b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800";
+      } else if (!images.back) {
+        b2Badge.textContent = "Upload Pending 📤";
+        b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-slate-400";
+      } else if (recorded.back.area2) {
+        b2Badge.textContent = "Captured 💾";
+        b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-amber-950/80 text-amber-400 border border-amber-800";
+      } else {
+        b2Badge.textContent = "Active / Unsaved ⚪";
+        b2Badge.className = "font-mono text-[9px] px-2 py-0.5 rounded bg-slate-800 text-indigo-400 border border-slate-700";
+      }
+    }
+
+    function syncInputs() {
+      if (ppi > 0 && !dragState) {
+        inputBoxHeight.value = (boxes[activeTab].height / ppi).toFixed(2);
+        inputBoxOffset.value = ((boxes[activeTab].y - guides.collar) / ppi).toFixed(2);
+      }
+    }
+
+    function renderRuler() {
+      const pixelDist = guides.bottom - guides.top;
+      if (pixelDist <= 0 || garmentHeight <= 0) return;
+
+      rulerLayer.style.top = `${guides.top}px`;
+      rulerLayer.style.height = `${pixelDist}px`;
+
+      const ppiVal = pixelDist / garmentHeight;
+      let ticksHTML = '';
+
+      for (let i = 0; i <= garmentHeight; i++) {
+        ticksHTML += `
+          <div class="absolute left-0 flex items-center w-full" style="top: ${i * ppiVal}px; height: 1px;">
+            <div class="w-2.5 h-px bg-white/60"></div>
+            <span class="text-[7px] font-mono text-slate-300 ml-1 select-none drop-shadow-md">${i}"</span>
+          </div>
+        `;
+
+        if (ppiVal > 15 && i < garmentHeight) {
+          [0.25, 0.5, 0.75].forEach(frac => {
+            ticksHTML += `
+              <div class="absolute left-0 flex items-center w-full" style="top: ${(i + frac) * ppiVal}px; height: 1px;">
+                <div class="h-px bg-white/20 ${frac === 0.5 ? 'w-1.5' : 'w-1'}"></div>
+              </div>
+            `;
+          });
+        }
+      }
+      rulerLayer.innerHTML = ticksHTML;
+    }
+
+    function renderGhostBoxes() {
+      const sides = ['front', 'back'];
+      sides.forEach(side => {
+        const isCurrentSide = (activeTab === side);
+
+        // Ghost Area 1
+        const g1 = document.getElementById(`ghost-${side}-1`);
+        const r1 = recorded[side].area1;
+        if (r1 && isCurrentSide) {
+          g1.style.left = `${r1.x}px`;
+          g1.style.top = `${r1.y}px`;
+          g1.style.width = `${r1.width}px`;
+          g1.style.height = `${r1.height}px`;
+          g1.classList.remove('hidden');
+        } else {
+          g1.classList.add('hidden');
+        }
+
+        // Ghost Area 2
+        const g2 = document.getElementById(`ghost-${side}-2`);
+        const r2 = recorded[side].area2;
+        if (r2 && isCurrentSide && areaConfig === 'double') {
+          g2.style.left = `${r2.x}px`;
+          g2.style.top = `${r2.y}px`;
+          g2.style.width = `${r2.width}px`;
+          g2.style.height = `${r2.height}px`;
+          g2.classList.remove('hidden');
+        } else {
+          g2.classList.add('hidden');
+        }
+      });
+    }
+
+    function renderCanvas() {
+      if (!images[activeTab]) {
+        canvasPlaceholder.classList.remove('hidden');
+        canvasActive.classList.add('hidden');
+        btnScreenshot.disabled = true;
+        document.getElementById('placeholder-text').textContent = `Waiting for ${activeTab.toUpperCase()} Image`;
+        return;
+      }
+
+      canvasPlaceholder.classList.add('hidden');
+      canvasActive.classList.remove('hidden');
+      btnScreenshot.disabled = false;
+
+      garmentPreview.src = images[activeTab];
+      
+      // Update Calibration Guides top values
+      guideTop.style.top = `${guides.top}px`;
+      guideBottom.style.top = `${guides.bottom}px`;
+      guideCollar.style.top = `${guides.collar}px`;
+
+      // Manage Visual Box State
+      const blockoutBack = activeTab === 'back' && backStatus === 'none';
+      const incompatibleBack = activeTab === 'back' && backStatus === 'incompatible';
+
+      if (blockoutBack || incompatibleBack) {
+        canvasBlockout.classList.remove('hidden');
+        printAreaBox.classList.add('hidden');
+        blockoutMessage.textContent = blockoutBack ? 'No Back Image Selected' : 'Incompatible Print Area (Locks to zero)';
+      } else {
+        canvasBlockout.classList.add('hidden');
+        printAreaBox.classList.remove('hidden');
+        
+        const box = boxes[activeTab];
+        printAreaBox.style.left = `${box.x}px`;
+        printAreaBox.style.top = `${box.y}px`;
+        printAreaBox.style.width = `${box.width}px`;
+        printAreaBox.style.height = `${box.height}px`;
+
+        if (activeTab === 'front') {
+          printAreaBox.className = "absolute border-2 border-blue-500 bg-blue-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
+          printBoxLabel.textContent = "FRONT (ACTIVE)";
+          printBoxLabel.className = "absolute top-0 left-0 bg-blue-500 text-white text-[8px] px-1 font-bold";
+        } else {
+          printAreaBox.className = "absolute border-2 border-orange-500 bg-orange-500/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20";
+          printBoxLabel.textContent = "BACK (ACTIVE)";
+          printBoxLabel.className = "absolute top-0 left-0 bg-orange-500 text-white text-[8px] px-1 font-bold";
+        }
+
+        const coords = formatBoxCoordinates(box).split('\t');
+        tagTl.textContent = `TL: ${coords[0] || '---'}`;
+        tagBr.textContent = `BR: ${coords[1] || '---'}`;
+      }
+
+      renderRuler();
+      renderGhostBoxes();
+      updateOutputs();
+    }
+
+    function setupDragging() {
+      const handleStart = (e, type, id) => {
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        const initial = type === 'guide' ? guides[id] : { ...boxes[activeTab] };
+        dragState = {
+          type,
+          id,
+          startX: touch.clientX,
+          startY: touch.clientY,
+          initial
+        };
+      };
+
+      // Guide element starts
+      guideTop.addEventListener('mousedown', e => handleStart(e, 'guide', 'top'));
+      guideTop.addEventListener('touchstart', e => handleStart(e, 'guide', 'top'), { passive: false });
+
+      guideBottom.addEventListener('mousedown', e => handleStart(e, 'guide', 'bottom'));
+      guideBottom.addEventListener('touchstart', e => handleStart(e, 'guide', 'bottom'), { passive: false });
+
+      guideCollar.addEventListener('mousedown', e => handleStart(e, 'guide', 'collar'));
+      guideCollar.addEventListener('touchstart', e => handleStart(e, 'guide', 'collar'), { passive: false });
+
+      // Box and Resize starts
+      printAreaBox.addEventListener('mousedown', e => {
+        if (e.target === resizeHandle || resizeHandle.contains(e.target)) return;
+        handleStart(e, 'box', activeTab);
+      });
+      printAreaBox.addEventListener('touchstart', e => {
+        if (e.target === resizeHandle || resizeHandle.contains(e.target)) return;
+        handleStart(e, 'box', activeTab);
+      }, { passive: false });
+
+      resizeHandle.addEventListener('mousedown', e => handleStart(e, 'resize', activeTab));
+      resizeHandle.addEventListener('touchstart', e => handleStart(e, 'resize', activeTab), { passive: false });
+
+      // Window drag update
+      const handleMove = (e) => {
+        if (!dragState) return;
+        const touch = e.touches ? e.touches[0] : e;
+        const dx = touch.clientX - dragState.startX;
+        const dy = touch.clientY - dragState.startY;
+        const containerRect = canvasContainer.getBoundingClientRect();
+
+        if (dragState.type === 'guide') {
+          guides[dragState.id] = Math.max(0, Math.min(containerRect.height, dragState.initial + dy));
+        } else if (dragState.type === 'box') {
+          const box = boxes[activeTab];
+          box.x = Math.max(0, Math.min(containerRect.width - box.width, dragState.initial.x + dx));
+          box.y = Math.max(0, Math.min(containerRect.height - box.height, dragState.initial.y + dy));
+        } else if (dragState.type === 'resize') {
+          const box = boxes[activeTab];
+          box.width = Math.max(20, dragState.initial.width + dx);
+          box.height = Math.max(20, dragState.initial.height + dy);
+        }
+
+        updatePPI();
+        syncInputs();
+        renderCanvas();
+      };
+
+      const handleEnd = () => {
+        dragState = null;
+      };
+
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('touchmove', handleMove, { passive: false });
+      window.addEventListener('mouseup', handleEnd);
+      window.addEventListener('touchend', handleEnd);
+    }
+
+    btnRecordArea1.addEventListener('click', () => {
+      if (!images[activeTab]) {
+        showError(`Please upload the ${activeTab.toUpperCase()} image first.`);
+        return;
+      }
+      recorded[activeTab].area1 = { ...boxes[activeTab] };
+      showNotification(`Saved Active Box as ${activeTab.toUpperCase()} Area 1`);
+      renderCanvas();
+    });
+
+    btnRecordArea2.addEventListener('click', () => {
+      if (!images[activeTab]) {
+        showError(`Please upload the ${activeTab.toUpperCase()} image first.`);
+        return;
+      }
+      if (areaConfig !== 'double') return;
+      recorded[activeTab].area2 = { ...boxes[activeTab] };
+      showNotification(`Saved Active Box as ${activeTab.toUpperCase()} Area 2`);
+      renderCanvas();
+    });
+
+    btnClearRecording.addEventListener('click', () => {
+      recorded.front.area1 = null;
+      recorded.front.area2 = null;
+      recorded.back.area1 = null;
+      recorded.back.area2 = null;
+      showNotification("Cleared saved slots. Reverted to live tracking.");
+      renderCanvas();
+    });
+
+    selectAreaConfig.addEventListener('change', e => {
+      areaConfig = e.target.value;
+      if (areaConfig === 'single') {
+        btnRecordArea2.disabled = true;
+        area2SubLabel.textContent = "Locked (Single Area)";
+      } else {
+        btnRecordArea2.disabled = false;
+        area2SubLabel.textContent = "Save Active Frame";
+      }
+      renderCanvas();
+    });
+
+    selectBackStatus.addEventListener('change', e => {
+      backStatus = e.target.value;
+      renderCanvas();
+    });
+
+    selectPlacementNote.addEventListener('change', e => {
+      placementNote = e.target.value;
+      renderCanvas();
+    });
+
+    garmentHeightInput.addEventListener('input', e => {
+      garmentHeight = parseFloat(e.target.value) || 28;
+      updatePPI();
+      syncInputs();
+      renderCanvas();
+    });
+
+    inputBoxHeight.addEventListener('input', e => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val) && ppi > 0 && val > 0) {
+        boxes[activeTab].height = val * ppi;
+        renderCanvas();
+      }
+    });
+
+    inputBoxOffset.addEventListener('input', e => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val) && ppi > 0) {
+        boxes[activeTab].y = guides.collar + (val * ppi);
+        renderCanvas();
+      }
+    });
+
+    tabFront.addEventListener('click', () => {
+      activeTab = 'front';
+      tabFront.className = "flex-1 py-3 text-xs font-bold transition-all border-b-4 border-blue-500 text-blue-400";
+      tabBack.className = "flex-1 py-3 text-xs font-bold transition-all text-slate-500 hover:text-slate-300";
+      syncInputs();
+      renderCanvas();
+    });
+
+    tabBack.addEventListener('click', () => {
+      activeTab = 'back';
+      tabBack.className = "flex-1 py-3 text-xs font-bold transition-all border-b-4 border-blue-500 text-blue-400";
+      tabFront.className = "flex-1 py-3 text-xs font-bold transition-all text-slate-500 hover:text-slate-300";
+      syncInputs();
+      renderCanvas();
+    });
+
+    function setupUpload(inputElement, statusElement, side) {
+      inputElement.addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            if (img.width === 1000 && img.height === 1000) {
+              images[side] = ev.target.result;
+              statusElement.textContent = `${side.toUpperCase()} ✓`;
+              statusElement.className = "text-[10px] block mt-1 font-bold text-green-400";
+              showError("");
+              
+              activeTab = side;
+              if (side === 'front') {
+                tabFront.click();
+              } else {
+                tabBack.click();
+              }
+              renderCanvas();
+            } else {
+              showError(`Invalid dimension: ${img.width}x${img.height}. Please upload a strict 1000x1000 image.`);
+            }
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    setupUpload(uploadFront, document.getElementById('front-status'), 'front');
+    setupUpload(uploadBack, document.getElementById('back-upload-status'), 'back');
+
+    // Align frame horizontally to center
+    btnCenter.addEventListener('click', () => {
+      const rect = canvasContainer.getBoundingClientRect();
+      const activeBox = boxes[activeTab];
+      activeBox.x = (rect.width / 2) - (activeBox.width / 2);
+      renderCanvas();
+    });
+
+    // Capture dynamic high resolution workspace preview
+    btnScreenshot.addEventListener('click', async () => {
+      if (!images[activeTab] || !window.html2canvas) return;
+      
+      const canvas = await window.html2canvas(canvasContainer, { 
+        useCORS: true, 
+        scale: 2,
+        backgroundColor: '#020617'
+      });
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = `sizing-${activeTab}-${Date.now()}.png`;
+      link.click();
+    });
+
+    function copyText(text) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      showNotification("Unified Line Copied!");
+    }
+
+    btnCopyMain.addEventListener('click', () => {
+      copyText(outputMainData.textContent);
+    });
+
+    btnSave.addEventListener('click', () => {
+      const output = getFinalSingleLineOutput();
+      if (output.includes("---")) return;
+
+      const time = new Date().toLocaleTimeString();
+      history.unshift({ id: Date.now(), data: output, time });
+
+      // Render history list
+      noHistoryPlaceholder.classList.add('hidden');
+      
+      const entry = document.createElement('div');
+      entry.className = "p-3 text-[10px] flex justify-between items-center hover:bg-slate-800/40 group transition-all";
+      entry.innerHTML = `
+        <span class="opacity-40 font-mono w-16 text-slate-400">${time}</span>
+        <span class="font-mono truncate flex-1 px-4 text-slate-300 text-center select-all">${output}</span>
+        <button class="text-blue-400 font-bold px-2 py-1 rounded hover:bg-blue-950/50 transition-colors btn-copy-entry">COPY</button>
+      `;
+
+      entry.querySelector('.btn-copy-entry').addEventListener('click', () => {
+        copyText(output);
+      });
+
+      historyContainer.insertBefore(entry, historyContainer.firstChild);
+      showNotification("Saved to History Log!");
+    });
+
+    btnCopyHistory.addEventListener('click', () => {
+      if (history.length === 0) return;
+      const combined = history.map(h => h.data).join('\n');
+      copyText(combined);
+    });
+
+    window.addEventListener('load', () => {
+      updatePPI();
+      renderCanvas();
+      setupDragging();
+      syncInputs();
+    });
+
+  </script>
+</body>
+</html>
